@@ -2,7 +2,7 @@ from sys import path
 import re
 
 with open(path[0] + '/input.txt') as f:
-    batch = re.split('\n\n', f.read())
+    passports = [dict(re.findall(r'(byr|iyr|pid|cid|eyr|hcl|ecl|hgt):([^\s]+)(?:\s|$)', i)) for i in re.split('\n\n', f.read())]
 
 valid = {
     'byr': r'^(19[2-9]\d|200[0-2])$',
@@ -14,12 +14,5 @@ valid = {
     'pid': r'^\d{9}$'
 }
 
-c, v = 0, 0
-for i in batch:
-    fields = ['byr', 'iyr', 'pid', 'eyr', 'hcl', 'ecl', 'hgt']
-    passport = dict(re.findall(r'(byr|iyr|pid|cid|eyr|hcl|ecl|hgt):([^\s]+)(?:\s|$)', i))
-    c += all(k in passport for k in fields)
-    v += all(re.match(valid[k], passport.get(k, '')) for k in fields)
-
-print(c)
-print(v)
+print(sum(all(k in p for k in valid.keys()) for p in passports))
+print(sum(all(re.match(valid[k], p.get(k, '')) for k in valid.keys()) for p in passports))
