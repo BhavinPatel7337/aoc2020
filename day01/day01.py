@@ -1,6 +1,6 @@
 from sys import path
 
-with open(path[0] +"/input.txt") as f:
+with open(path[0] + '/input.txt') as f:
     expenses = [int(x) for x in f]
 
 for i in expenses:
