@@ -14,5 +14,5 @@ valid = {
     'pid': r'^\d{9}$'
 }
 
-print(sum(all(k in p for k in valid.keys()) for p in passports))
-print(sum(all(re.match(valid[k], p.get(k, '')) for k in valid.keys()) for p in passports))
+print(sum(all(k in p for k in valid) for p in passports))
+print(sum(all(re.match(valid[k], p.get(k, '')) for k in valid) for p in passports))
