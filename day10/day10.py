@@ -15,20 +15,21 @@ def tribonacci(n):
     return tribonacci(n - 1) + tribonacci(n - 2) + tribonacci(n - 3)
 
 def run_lengths(differences):
-    f = lambda x: sum(differences[i:i + x] == [1] * x for i in range(len(differences)))
-    n = 1
-    l = []
-    while f(n + 1):
-        n += 1
-    while n > 1:
-        r = list(range(len(l) + 1, 1, -1))
-        x = f(n) - sum([x * y for x,y in zip(l, r)])
-        l.append(x)
-        n -= 1
-    return l
+    i, n, d = 0, 0, {}
+    while i < len(differences):
+        if differences[i] == 1:
+            n += 1
+            if n not in d:
+                d[n] = 0
+        else:
+            if n > 1:
+                d[n] += 1
+            n = 0
+        i += 1
+    return [d[n] for n in sorted(d)][1:]
 
 rl = run_lengths(differences)
-tr = [tribonacci(i) for i in range(3,3 + len(rl))][::-1]
+tr = [tribonacci(i) for i in range(3,3 + len(rl))]
 product = 1
 for i in [(x ** y) for x, y in zip(tr, rl)]:
     product *= i
