@@ -1,122 +1,44 @@
 from sys import path
 
+grid, adjacent = {}, {}
+directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
 with open(path[0] + '/input.txt') as f:
-    grid = [line.strip() for line in f]
+    for y, row in enumerate(f):
+        for x, state in enumerate(row.strip()):
+            grid[x, y] = state
+            if state != '.':
+                adjacent[x, y] = [(x + dx, y + dy) for dx, dy in directions]
 
-max_x, max_y = len(grid[0]) - 1, len(grid) - 1
-
-def print_grid(grid):
-    for y in grid:
-        print(''.join(y))
-    input('\n')
-
-def list_adjacent(grid, x, y, max_x, max_y):
-    lst = []
-    if x != 0:
-        lst.append(grid[y][x - 1])
-    if x != max_x:
-        lst.append(grid[y][x + 1])
-    if y != 0:
-        lst.append(grid[y - 1][x])
-    if y != max_y:
-        lst.append(grid[y + 1][x])
-    if x != 0 and y != 0:
-        lst.append(grid[y - 1][x - 1])
-    if x != 0 and y != max_y:
-        lst.append(grid[y + 1][x - 1])
-    if x != max_x and y != 0:
-        lst.append(grid[y - 1][x + 1])
-    if x != max_x and y != max_y:
-        lst.append(grid[y + 1][x + 1])
-    return lst
-
-def check_visible(grid, x, y, max_x, max_y):
-    occupied = 0
-    i = x
-    while i > 0:
-        if grid[y][i - 1] != '.':
-            occupied += grid[y][i - 1] == '#'
-            break
-        i -= 1
-    
-    j = y
-    while j > 0:
-        if grid[j - 1][x] != '.':
-            occupied += grid[j - 1][x] == '#'
-            break
-        j -= 1
-    
-    i = x
-    while i < max_x:
-        if grid[y][i + 1] != '.':
-            occupied += grid[y][i + 1] == '#'
-            break
-        i += 1
-    
-    j = y
-    while j < max_y:
-        if grid[j + 1][x] != '.':
-            occupied += grid[j + 1][x] == '#'
-            break
-        j += 1
-    
-    i = x
-    j = y
-    while i > 0 and j > 0:
-        if grid[j - 1][i - 1] != '.':
-            occupied += grid[j - 1][i - 1] == '#'
-            break
-        i -= 1
-        j -= 1
-    
-    i = x
-    j = y
-    while i < max_x and j > 0:
-        if grid[j - 1][i + 1] != '.':
-            occupied += grid[j - 1][i + 1] == '#'
-            break
-        i += 1
-        j -= 1
-    
-    i = x
-    j = y
-    while i > 0 and j < max_y:
-        if grid[j + 1][i - 1] != '.':
-            occupied += grid[j + 1][i - 1] == '#'
-            break
-        i -= 1
-        j += 1
-    
-    i = x
-    j = y
-    while i < max_x and j < max_y:
-        if grid[j + 1][i + 1] != '.':
-            occupied += grid[j + 1][i + 1] == '#'
-            break
+def find_visible(x, y, dx, dy):
+    i, j = 1, 1
+    while grid.get((x + dx * i, y + dy * j)) == '.':
         i += 1
         j += 1
+    if (x + dx * i, y + dy * j) in grid:
+        return [(x + dx * i, y + dy * j)]
+    else:
+        return []
 
-    return occupied
-
-def check_adjacent(grid, x, y, max_x, max_y):
-    return sum(i == '#' for i in list_adjacent(grid, x, y, max_x, max_y))
+visible = {}
+for x, y in grid:
+    if grid[x, y] != '.':
+        lst = []
+        for dx, dy in directions:
+            lst += find_visible(x, y, dx, dy)
+        visible[x, y] = lst
 
 def iterate(grid):
-    new_grid = []
-    for y in range(max_y + 1):
-        new_grid.append([])
-        for x in range(max_x + 1):
-            if grid[y][x] == 'L' and check_visible(grid, x, y, max_x, max_y) == 0:
-                new_grid[y].append('#')
-            elif grid[y][x] == '#' and check_visible(grid, x, y, max_x, max_y) > 4:
-                new_grid[y].append('L')
-            else:
-                new_grid[y].append(grid[y][x])
+    new_grid = {}
+    for x, y in grid:
+        if grid[x, y] == 'L' and sum(grid.get(i) == '#' for i in visible[x, y]) == 0:
+            new_grid[x, y] = '#'
+        elif grid[x, y] == '#' and sum(grid.get(i) == '#' for i in visible[x, y]) > 4:
+            new_grid[x, y] = 'L'
+        else:
+            new_grid[x, y] = grid[x, y]
     return new_grid
 
-#print_grid(grid)
 while grid != iterate(grid):
     grid = iterate(grid)
-    #print_grid(grid)
 
-print(sum(sum(x == '#' for x in y) for y in grid))
+print(sum(i == '#' for i in grid.values()))
